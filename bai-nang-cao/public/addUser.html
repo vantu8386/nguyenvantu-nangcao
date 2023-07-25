@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/addUser.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <h1>Score keeper</h1>
+        <h2>Danh sách người chơi:</h2>
+        <div id="playerList">
+        </div>
+        <form>
+            <div>
+                <label for="playerName">Tên người chơi:</label>
+                <input type="text" class="form-control" id="playerName" aria-describedby="emailHelp"
+                    placeholder="Nhập tên người chơi" oninput="updatePlayerList(this.value)">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="createGame()">Create Game</button>
+        </form>
+        <br>
+        <hr> <br>
+
+        <table class="table">
+            <thead>
+                <tr id="thead">
+                    <th>#</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="scores">
+
+                </tr>
+
+                <tr id="number">
+                    <td>Round 1</td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-primary">Add round</button>
+
+    </div>
+    <!-- <script src="/addUser.js"></script>
+    <script src="	https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script>
+        let baseURL = "http://localhost:3000/api/v1/users";
+        let thead = document.getElementById("thead");
+        let scores = document.getElementById("scores");
+        let number = document.getElementById("number");
+        let playerList = document.getElementById("playerList");
+
+        // Hàm lấy danh sách người chơi từ API và hiển thị lên ô input
+        function updatePlayerList(value) {
+            playerList.innerHTML = ""; // Xóa danh sách cũ
+
+            fetch(baseURL)
+                .then((res) => res.json())
+                .then((data) => {
+                    data.users.forEach((element, index) => {
+                        if (element.user.includes(value)) {
+                            playerList.innerHTML += `
+                    <p class="form-control">${element.user}</p>  
+                  `;
+                        }
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+
+        fetch(baseURL)
+            .then((res) => res.json())
+            .then((data) => {
+                data.users.forEach((element, index) => {
+                    thead.innerHTML += `
+                <th class="flex-th" scope="col">${element.user}</th>  
+              `;
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
+        fetch(baseURL)
+            .then((res) => res.json())
+            .then((data) => {
+                scores.innerHTML += `
+              <td>Tổng điểm(0)</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+             
+            `;
+            });
+
+        // Hàm thêm người chơi mới
+        function createGame() {
+            const playerName = document.getElementById("playerName").value;
+            const count = 0;
+
+            fetch(baseURL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user: playerName, count: count }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    // Xử lý dữ liệu trả về sau khi thêm người chơi mới thành công
+                    console.log(data);
+
+                    // Clear nội dung ô input
+                    document.getElementById("playerName").value = "";
+
+                    // Hiển thị người chơi mới vừa thêm vào table header
+                    thead.innerHTML += `
+                <th class="flex-th" scope="col">${data.user.user}</th>  
+              `;
+
+                    // Cập nhật danh sách người chơi
+                    updatePlayerList("");
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+    </script>
+</body>
+
+</html>
